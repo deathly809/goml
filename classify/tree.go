@@ -1,5 +1,7 @@
 package classify
 
+import "github.com/deathly809/goml/data"
+
 // Decision Tree
 
 type dTree struct {
@@ -27,7 +29,7 @@ const (
 type DecisionTreeParameters struct {
 }
 
-func (dt *dTree) Classify([]float32) float32 {
+func (dt *dTree) Classify([]data.Value) float32 {
 	panic("Unimplemented")
 }
 

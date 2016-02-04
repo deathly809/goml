@@ -4,6 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/deathly809/gomath"
+	"github.com/deathly809/goml/data"
 )
 
 type svm struct {
@@ -12,7 +13,7 @@ type svm struct {
 	kernel         Kernel
 }
 
-func (s *svm) Classify(data []float32) float32 {
+func (s *svm) Classify(data []data.Value) float32 {
 	panic("unimplemented")
 }
 
@@ -29,7 +30,7 @@ type smoState struct {
 
 	// Current build up
 	a1, a2 float32
-	v1, v2 []float32
+	v1, v2 []data.Value
 	E1, E2 float32
 	y1, y2 float32
 
