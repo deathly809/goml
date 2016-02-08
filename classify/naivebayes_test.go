@@ -2,6 +2,7 @@ package classify
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -22,12 +23,12 @@ func (m *mydata) Class() float32 {
 }
 
 type myvalue struct {
-	data    string
+	real    float64
 	theType data.Type
 }
 
 func (m *myvalue) Text() string {
-	return m.data
+	return strconv.FormatFloat(m.real, 'E', -1, 64)
 }
 
 func (m *myvalue) Integer() int64 {
@@ -35,7 +36,7 @@ func (m *myvalue) Integer() int64 {
 }
 
 func (m *myvalue) Real() float64 {
-	return 0
+	return m.real
 }
 
 func (m *myvalue) Boolean() bool {
@@ -51,9 +52,10 @@ func (m *myvalue) Initialized() bool {
 }
 
 func createValue(text string) data.Value {
+	val, _ := strconv.ParseFloat(text, 64)
 	return &myvalue{
-		data:    text,
-		theType: data.Text,
+		real:    val,
+		theType: data.Real,
 	}
 }
 
@@ -81,5 +83,7 @@ func TestNaiveBayes(t *testing.T) {
 		createData("5.75,150,9", -1),
 	}
 	classifier := New(input)
-	fmt.Println(classifier.Classify(input[0].Value()))
+	for _, r := range input {
+		fmt.Println(classifier.Classify(r.Value()))
+	}
 }
