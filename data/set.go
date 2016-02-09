@@ -1,20 +1,22 @@
 package data
 
+import "github.com/deathly809/gotypes"
+
 type set struct {
-	cTypes []Type
-	data   [][]Value
+	cTypes []gotypes.Type
+	data   [][]gotypes.Value
 	rows   int
 	cols   int
 
 	header []string
 }
 
-func (s *set) ColumnTypes() []Type {
+func (s *set) ColumnTypes() []gotypes.Type {
 	return s.cTypes
 }
 
-func (s *set) Row(row int) []Value {
-	result := []Value(nil)
+func (s *set) Row(row int) []gotypes.Value {
+	result := []gotypes.Value(nil)
 	if row >= 0 && row < s.rows {
 		result = s.data[row]
 	}

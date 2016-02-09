@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/deathly809/gomath"
-	"github.com/deathly809/goml/data"
+	"github.com/deathly809/gotypes"
 )
 
 /*
@@ -37,7 +37,7 @@ type naive struct {
 	pNegative  float64
 }
 
-func (n *naive) Classify(v []data.Value) float32 {
+func (n *naive) Classify(v []gotypes.Value) float32 {
 	result := 0.0
 	pPositive := n.pPositive
 	pNegative := n.pNegative

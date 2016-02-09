@@ -2,93 +2,109 @@ package data
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/deathly809/gotypes"
 )
-
-// Type is the underlying type of the data
-type Type int
-
-const (
-	// Unknown means we don't know what the underlying data type is yet
-	Unknown = Type(iota)
-	// Real is a floating point value
-	Real = Type(iota)
-	// Integer is an integral value
-	Integer = Type(iota)
-	// Boolean is a true/false
-	Boolean = Type(iota)
-	// Text means we could not put it in any of the others
-	Text = Type(iota)
-)
-
-// Value is a wrapper for data
-type Value interface {
-	Type() Type
-	Integer() int64
-	Real() float64
-	Boolean() bool
-	Text() string
-
-	Initialized() bool
-}
 
 // Set is the interface for a
 // tabular set of data
 type Set interface {
-	Row(int) []Value
+	Row(int) []gotypes.Value
 
 	Header() []string
-	ColumnTypes() []Type
+	ColumnTypes() []gotypes.Type
 
 	Rows() int
 	Columns() int
 }
 
-func parseRow(row []string, types []Type) []Value {
-	result := make([]Value, len(row))
-	for i, d := range row {
-		v := &value{
-			dataType: types[i],
-			text:     d,
-		}
-
-		var err error
-
-		if types[i] != Unknown {
-			switch types[i] {
-			case Real:
-				v.real, err = strconv.ParseFloat(strings.TrimSpace(d), 64)
-			case Integer:
-				v.integer, _ = strconv.ParseInt(strings.TrimSpace(d), 10, 64)
-			case Boolean:
-				v.boolean, _ = strconv.ParseBool(strings.TrimSpace(d))
-			}
-			v.initialized = (err == nil)
+func parseColumn(text string, theType gotypes.Type) (result gotypes.Value, retType gotypes.Type, err error) {
+	if theType == gotypes.Unknown {
+		if result, retType, err = parseColumn(text, gotypes.Real); err == nil {
+			/* Empty */
+		} else if result, retType, err = parseColumn(text, gotypes.Integer); err == nil {
+			/* Empty */
+		} else if result, retType, err = parseColumn(text, gotypes.Boolean); err == nil {
+			/* Empty */
+		} else if result, retType, err = parseColumn(text, gotypes.Text); err == nil {
+			/* Empty */
 		} else {
-			v.initialized = (d != "")
-			if v.initialized {
-				trimmed := strings.TrimSpace(d)
-				types[i], v.dataType = Text, Text
-				if v.real, err = strconv.ParseFloat(trimmed, 64); err == nil {
-					types[i], v.dataType = Real, Real
-				} else if v.integer, err = strconv.ParseInt(trimmed, 10, 64); err == nil {
-					types[i], v.dataType = Integer, Integer
-				} else if v.boolean, err = strconv.ParseBool(trimmed); err == nil {
-					types[i], v.dataType = Boolean, Boolean
+			panic("Something went seriously wrong")
+		}
+	} else {
+
+		var (
+			real    float64
+			integer int64
+			boolean bool
+		)
+		retType = theType
+
+		switch theType {
+		case gotypes.Real:
+			if real, err = strconv.ParseFloat(strings.TrimSpace(text), 64); err != nil {
+				break
+			} else {
+				result = gotypes.WrapReal(real)
+				if result == nil {
+					panic("real...")
 				}
 			}
-
+		case gotypes.Integer:
+			if integer, err = strconv.ParseInt(strings.TrimSpace(text), 10, 64); err != nil {
+				break
+			} else {
+				result = gotypes.WrapInteger(integer)
+				if result == nil {
+					panic("integer...")
+				}
+			}
+		case gotypes.Boolean:
+			if boolean, err = strconv.ParseBool(strings.TrimSpace(text)); err != nil {
+				break
+			} else {
+				result = gotypes.WrapBoolean(boolean)
+				if result == nil {
+					panic("boolean...")
+				}
+			}
+		case gotypes.Text:
+			result = gotypes.WrapText(text)
+			if result == nil {
+				panic("text...")
+			}
+		default:
+			panic(fmt.Sprintf("%s: %d\n", "Unknown type", theType))
 		}
-		result[i] = v
+
+		// In the else
+		if result == nil && err == nil {
+			panic(fmt.Sprintf("%s: %d", "no one caught...", theType))
+		}
 	}
-	return result
+	return
+}
+
+func parseRow(row []string, types []gotypes.Type) (result []gotypes.Value, err error) {
+	result = make([]gotypes.Value, len(row))
+	for i, d := range row {
+		if result[i], types[i], err = parseColumn(d, types[i]); err != nil {
+			panic(err.Error())
+		}
+		if result[i] == nil {
+			panic(fmt.Sprintf("%s: %d", "nil result", types[i]))
+		}
+	}
+	return
 }
 
 // LoadCSV will load a data set from a CSV
 // source
-func LoadCSV(input io.Reader, header bool) Set {
+func LoadCSV(input io.Reader, header bool) (r Set, err error) {
 	result := &set{}
 	reader := csv.NewReader(input)
 
@@ -104,14 +120,20 @@ func LoadCSV(input io.Reader, header bool) Set {
 		}
 		result.header = top
 	}
+
 	for row, err := reader.Read(); err == nil; row, err = reader.Read() {
 		if result.cTypes == nil {
 			result.cols = len(row)
-			result.cTypes = make([]Type, len(row))
+			result.cTypes = make([]gotypes.Type, len(row))
 		}
-		result.data = append(result.data, parseRow(row, result.cTypes))
+		r, err := parseRow(row, result.cTypes)
+		if err != nil {
+			result = nil
+			break
+		}
+		result.data = append(result.data, r)
+		result.rows++
 	}
-	result.rows = len(result.data)
-
-	return result
+	r = result
+	return
 }

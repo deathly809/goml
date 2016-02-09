@@ -6,15 +6,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/deathly809/goml/data"
+	"github.com/deathly809/gotypes"
 )
 
 type mydata struct {
-	value []data.Value
+	value []gotypes.Value
 	class float32
 }
 
-func (m *mydata) Value() []data.Value {
+func (m *mydata) Value() []gotypes.Value {
 	return m.value
 }
 
@@ -24,7 +24,7 @@ func (m *mydata) Class() float32 {
 
 type myvalue struct {
 	real    float64
-	theType data.Type
+	theType gotypes.Type
 }
 
 func (m *myvalue) Text() string {
@@ -43,7 +43,7 @@ func (m *myvalue) Boolean() bool {
 	return true
 }
 
-func (m *myvalue) Type() data.Type {
+func (m *myvalue) Type() gotypes.Type {
 	return m.theType
 }
 
@@ -51,17 +51,14 @@ func (m *myvalue) Initialized() bool {
 	return true
 }
 
-func createValue(text string) data.Value {
+func createValue(text string) gotypes.Value {
 	val, _ := strconv.ParseFloat(text, 64)
-	return &myvalue{
-		real:    val,
-		theType: data.Real,
-	}
+	return gotypes.WrapReal(val)
 }
 
 func createData(csv string, class float32) Data {
 	split := strings.Split(csv, ",")
-	vArray := []data.Value(nil)
+	vArray := []gotypes.Value(nil)
 	for _, s := range split {
 		vArray = append(vArray, createValue(s))
 	}

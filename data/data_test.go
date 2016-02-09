@@ -12,9 +12,13 @@ func TestLoadCSVNoHeader(t *testing.T) {
 		ExpectedNumCols = 3
 	)
 
-	dataSet := LoadCSV(strings.NewReader(data), false)
-
+	dataSet, err := LoadCSV(strings.NewReader(data), false)
+	if err != nil {
+		t.Logf("Error: %s", err.Error())
+		t.FailNow()
+	}
 	if dataSet == nil {
+		t.Logf("dataSet is nil")
 		t.FailNow()
 	}
 
@@ -37,9 +41,15 @@ func TestLoadCSVWithHeader(t *testing.T) {
 		ExpectedNumCols = 3
 	)
 
-	dataSet := LoadCSV(strings.NewReader(data), true)
+	dataSet, err := LoadCSV(strings.NewReader(data), true)
+
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
 
 	if dataSet == nil {
+		t.Logf("dataSet is nil")
 		t.FailNow()
 	}
 
