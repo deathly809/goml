@@ -50,40 +50,23 @@ func parseColumn(text string, theType gotypes.Type) (result gotypes.Value, retTy
 				break
 			} else {
 				result = gotypes.WrapReal(real)
-				if result == nil {
-					panic("real...")
-				}
 			}
 		case gotypes.Integer:
 			if integer, err = strconv.ParseInt(strings.TrimSpace(text), 10, 64); err != nil {
 				break
 			} else {
 				result = gotypes.WrapInteger(integer)
-				if result == nil {
-					panic("integer...")
-				}
 			}
 		case gotypes.Boolean:
 			if boolean, err = strconv.ParseBool(strings.TrimSpace(text)); err != nil {
 				break
 			} else {
 				result = gotypes.WrapBoolean(boolean)
-				if result == nil {
-					panic("boolean...")
-				}
 			}
 		case gotypes.Text:
 			result = gotypes.WrapText(text)
-			if result == nil {
-				panic("text...")
-			}
 		default:
 			panic(fmt.Sprintf("%s: %d\n", "Unknown type", theType))
-		}
-
-		// In the else
-		if result == nil && err == nil {
-			panic(fmt.Sprintf("%s: %d", "no one caught...", theType))
 		}
 	}
 	return
@@ -92,12 +75,7 @@ func parseColumn(text string, theType gotypes.Type) (result gotypes.Value, retTy
 func parseRow(row []string, types []gotypes.Type) (result []gotypes.Value, err error) {
 	result = make([]gotypes.Value, len(row))
 	for i, d := range row {
-		if result[i], types[i], err = parseColumn(d, types[i]); err != nil {
-			panic(err.Error())
-		}
-		if result[i] == nil {
-			panic(fmt.Sprintf("%s: %d", "nil result", types[i]))
-		}
+		result[i], types[i], err = parseColumn(d, types[i])
 	}
 	return
 }
