@@ -21,13 +21,13 @@ type WorkQueue struct {
 }
 
 // Init the work queue
-func (w WorkQueue) Init(numThreads int) {
+func (w *WorkQueue) Init(numThreads int) {
 	w.jobs = make(chan workData, 100)
 	w.numThreads = numThreads
 }
 
 // Start the work queue
-func (w WorkQueue) Start() {
+func (w *WorkQueue) Start() {
 	if !w.started {
 		for i := 0; i < w.numThreads; i++ {
 			go thread(w.jobs)
@@ -36,12 +36,12 @@ func (w WorkQueue) Start() {
 }
 
 // Stop the work queue
-func (w WorkQueue) Stop() {
+func (w *WorkQueue) Stop() {
 	close(w.jobs)
 }
 
 // Enqueue places work in the queue, blocks
-func (w WorkQueue) Enqueue(start, end int, f func(int)) {
+func (w *WorkQueue) Enqueue(start, end int, f func(int)) {
 	for i := start; i <= end; i++ {
 		w.jobs <- workData{
 			i: i,

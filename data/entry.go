@@ -45,7 +45,7 @@ func parseColumn(text string, theType gotypes.Type) (result gotypes.Value, retTy
 		retType = theType
 
 		switch theType {
-		case gotypes.Real:
+		case gotypes.Real:    
 			if real, err = strconv.ParseFloat(strings.TrimSpace(text), 64); err != nil {
 				break
 			} else {
