@@ -3,6 +3,9 @@ package cluster
 import "github.com/deathly809/gotypes"
 
 // Metric returns the distance between the values a and b
-type Metric func(a []gotypes.Value, b []float64) float64
+type Metric func(a []gotypes.Value, b []gotypes.Value) float64
 
-/* Empty? */
+/* data-point */
+type Point struct {
+	
+}

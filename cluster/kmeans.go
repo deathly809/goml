@@ -71,14 +71,16 @@ func KMeans(data []classify.Data, K int, m Metric, means [][]float64) [][]float6
 			// List of stuff
 			nMs := make([][]float64, K)
 			cs := make([]int, K)
-
+			
 			for i := range nMs {
 				nMs[i] = make([]float64, features)
 			}
 
 			start := i * elemPerThread
 			end := gomath.MinInt(start+elemPerThread, len(data))
-
+			
+			
+			
 			for start < end {
 				d := data[start]
 				closest := 0
