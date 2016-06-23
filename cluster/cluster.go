@@ -1,5 +1,7 @@
 package cluster
 
+import "sort"
+
 func arraysEqual(a, b []float64) bool {
 	if len(a) != len(b) {
 		return false
@@ -18,46 +20,42 @@ func arraysEqual(a, b []float64) bool {
 // Cluster - Holds whatever information is needed to represent a cluster
 //
 type Cluster struct {
-	points [][]float64
-	n, dim int
+	indices []int
 }
 
 // AddPoint - Add a given point to a cluster.  If the
 //      the point is nil it is discared.
-func (c Cluster) AddPoint(p []float64) {
-    if p != nil {
-        c.points = append(c.points, p)
-    }
+func (c Cluster) AddPoint(p int) {
+	c.indices = append(c.indices, p)
 }
 
 // GetPoints - returns the underlying points
 //
-func (c Cluster) GetPoints() [][]float64 {
-	result := make([][]float64, c.n)
-	for i := range c.points {
-		result[i] = make([]float64, c.dim)
-		copy(result[i], c.points[i])
-	}
-	return result
+func (c Cluster) GetPoints() []int {
+	return append([]int(nil), c.indices...)
 }
 
 // RemovePoint removes a point from the cluster
-func (c Cluster) RemovePoint(p []float64) {
-    // find and remove
-    for i := 0 ; i < len(c.points) ; {
-        if arraysEqual(p,c.points[i]) {
-            c.points[i] = c.points[c.n - 1]
-            c.n--
-        }else {
-            i++
-        }
-    }
-
-    // shrink if needed
-    c.points = c.points[:c.n]
+func (c Cluster) RemovePoint(index int) {
+	pos := sort.SearchInts(c.indices, index)
+	if pos < len(c.indices) {
+		if len(c.indices) == 1 {
+			c.indices = nil
+		} else {
+			c.indices[pos] = c.indices[len(c.indices)-1]
+			c.indices = c.indices[:len(c.indices)-1]
+		}
+	}
 }
 
 // Count returns the number of elements in this cluster
 func (c Cluster) Count() int {
-	return c.n
+	return len(c.indices)
+}
+
+// CreateCluster creates a cluster from some data
+func CreateCluster(data []int) Cluster {
+	return Cluster{
+		indices: append([]int(nil), data...),
+	}
 }
