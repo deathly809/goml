@@ -8,6 +8,7 @@ import (
 	"github.com/deathly809/gods/queue"
 	"github.com/deathly809/gomath"
 	"github.com/deathly809/goml/classify"
+	"github.com/deathly809/gotypes"
 	"github.com/deathly809/parallels"
 )
 
@@ -37,7 +38,7 @@ func same(a, b []float64) bool {
 
 // KMeans clustering
 // TODO: Change to not only be numeric
-func KMeans(data []classify.Data, K int, m Metric, means [][]float64) [][]float64 {
+func KMeans(data []classify.Data, K int, metric Metric, means [][]float64) [][]float64 {
 
 	features := len(data[0].Value())
 
@@ -67,7 +68,7 @@ func KMeans(data []classify.Data, K int, m Metric, means [][]float64) [][]float6
 	for change {
 		change = false
 		var lock sync.Mutex
-		parallels.Foreach(func(i int) {
+		parallels.Foreach(func(i int) bool {
 			// List of stuff
 			nMs := make([][]float64, K)
 			cs := make([]int, K)
@@ -82,9 +83,17 @@ func KMeans(data []classify.Data, K int, m Metric, means [][]float64) [][]float6
 			for start < end {
 				d := data[start]
 				closest := 0
-				dist := m(d.Value(), means[0])
+				wrap, err := gotypes.WrapArray(means[0], gotypes.Array)
+				if err != nil {
+					panic(err)
+				}
+				dist := metric(d.Value(), wrap.Array())
 				for k := 1; k < K; k++ {
-					nDist := m(d.Value(), means[k])
+					wrap, err = gotypes.WrapArray(means[k], gotypes.Array)
+					if err != nil {
+						panic(err)
+					}
+					nDist := metric(d.Value(), wrap.Array())
 					if nDist < dist {
 						dist = nDist
 						closest = k
@@ -110,6 +119,7 @@ func KMeans(data []classify.Data, K int, m Metric, means [][]float64) [][]float6
 				}
 				counts[i] += cs[i]
 			}
+			return false
 		}, iterations)
 
 		// Update means

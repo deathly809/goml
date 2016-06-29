@@ -26,10 +26,10 @@ func (m *mydata) Class() float32 {
 	return m.class
 }
 
-func met(a []gotypes.Value, b []float64) float64 {
+func met(a []gotypes.Value, b []gotypes.Value) float64 {
 	result := 0.0
 	for i := range a {
-		t := a[i].Real() - b[i]
+		t := a[i].Real() - b[i].Real()
 		result += t * t
 	}
 	return result
@@ -51,7 +51,7 @@ func init() {
 			start := i
 			end := gomath.MinInt(LargeK, i+jump)
 			for start < end {
-				vArray := make([]gotypes.Value, features    )
+				vArray := make([]gotypes.Value, features)
 				LargeData[start] = &mydata{value: vArray, class: 0}
 				for k := range vArray {
 					vArray[k] = gotypes.WrapReal(rand.Float64())
