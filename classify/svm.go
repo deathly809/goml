@@ -7,6 +7,10 @@ import (
 	"github.com/deathly809/gotypes"
 )
 
+const (
+	_Epsilon = 1.0E-5
+)
+
 type smo struct {
 	s      *svm
 	errors []float32
@@ -35,9 +39,37 @@ type smo struct {
 }
 
 type svm struct {
+	epsilon        float32
 	alpha          []float32
 	supportVectors []Data
 	kernel         Kernel
+}
+
+/*
+ *	KKT Conditions:
+ *
+ *		lagrangians are non-negative
+ *			a_i >= 0
+ *
+ *		answers are sufficient distance from hyperplane
+ *			y_i * h(x_i) - 1 >= 0
+ *
+ *		support vectors are on hyperplane
+ *			a_i * (y_i * h(x_i) - 1) = 0
+ */
+func (alg *smo) violatesKKT(i int) bool {
+	if alg.s.alpha[i] < _Epsilon {
+		return true
+	}
+
+	data := alg.s.supportVectors[i].Value()
+	y := alg.s.supportVectors[i].Class()
+
+	if y*alg.s.Classify(data)-1 < _Epsilon {
+		return true
+	}
+
+	return false
 }
 
 func (s *svm) Classify(data []gotypes.Value) float32 {
@@ -243,10 +275,10 @@ func solve(data []Data, k Kernel, tol, C float32) (result *svm) {
 			}
 		}
 
-		if numChanged == 0 {
+		if examineAll {
 			examineAll = true
-		} else {
-			alg.computeError()
+		} else if numChanged == 0 {
+			examineAll = true
 		}
 	}
 
